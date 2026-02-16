@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bodyright Healthcare - Salesforce to GHL Migration Project</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: #f7fafc;
+            padding: 0;
+        }
+
+        /* Cover Page */
+        .cover-page {
+            background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #3182ce 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 40px;
+            page-break-after: always;
+        }
+        .cover-page h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .cover-page .subtitle {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 50px;
+            opacity: 0.9;
+        }
+        .cover-page .meta-box {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            padding: 30px 50px;
+            display: inline-block;
+            text-align: left;
+        }
+        .cover-page .meta-box p {
+            font-size: 16px;
+            margin-bottom: 8px;
+            opacity: 0.95;
+        }
+        .cover-page .meta-box strong {
+            display: inline-block;
+            width: 180px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+            page-break-after: always;
+        }
+        .toc h2 {
+            font-size: 28px;
+            color: #1a365d;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #3182ce;
+            padding-bottom: 10px;
+        }
+        .toc ol {
+            list-style: none;
+            counter-reset: toc-counter;
+        }
+        .toc ol li {
+            counter-increment: toc-counter;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 17px;
+        }
+        .toc ol li:before {
+            content: counter(toc-counter) ". ";
+            font-weight: 700;
+            color: #3182ce;
+            margin-right: 8px;
+        }
+        .toc ol li a {
+            color: #2d3748;
+            text-decoration: none;
+        }
+        .toc ol li a:hover {
+            color: #3182ce;
+        }
+
+        /* Section */
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+        }
+        .section h2 {
+            font-size: 26px;
+            color: #1a365d;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3182ce;
+        }
+        .section h3 {
+            font-size: 20px;
+            color: #2b6cb0;
+            margin: 25px 0 12px 0;
+        }
+        .section h4 {
+            font-size: 17px;
+            color: #4a5568;
+            margin: 20px 0 10px 0;
+        }
+        .section p {
+            margin-bottom: 12px;
+        }
+        .section ul, .section ol {
+            margin: 10px 0 15px 25px;
+        }
+        .section li {
+            margin-bottom: 6px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0 20px 0;
+            font-size: 14px;
+        }
+        thead th {
+            background: #1a365d;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tbody td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        tbody tr:nth-child(even) {
+            background: #f7fafc;
+        }
+        tbody tr:hover {
+            background: #edf2f7;
+        }
+        .decommission { color: #e53e3e; font-weight: 600; }
+        .keep { color: #38a169; font-weight: 600; }
+
+        /* Flow Charts */
+        .flow-chart {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .flow-chart h4 {
+            color: #1a365d;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .flow-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            align-items: flex-start;
+        }
+        .flow-step {
+            background: white;
+            border: 2px solid #3182ce;
+            border-radius: 8px;
+            padding: 12px 20px;
+            position: relative;
+            max-width: 600px;
+            width: 100%;
+        }
+        .flow-step.highlight {
+            background: #ebf8ff;
+            border-color: #2b6cb0;
+        }
+        .flow-step.warning {
+            background: #fffaf0;
+            border-color: #dd6b20;
+        }
+        .flow-step.danger {
+            background: #fff5f5;
+            border-color: #e53e3e;
+        }
+        .flow-step.success {
+            background: #f0fff4;
+            border-color: #38a169;
+        }
+        .flow-step .step-title {
+            font-weight: 700;
+            color: #1a365d;
+            font-size: 15px;
+        }
+        .flow-step .step-detail {
+            font-size: 13px;
+            color: #4a5568;
+            margin-top: 4px;
+        }
+        .flow-arrow {
+            text-align: center;
+            color: #3182ce;
+            font-size: 24px;
+            padding: 3px 0;
+            margin-left: 30px;
+        }
+        .flow-branch {
+            margin-left: 40px;
+            border-left: 3px solid #cbd5e0;
+            padding-left: 20px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .flow-branch .trigger-item {
+            background: #edf2f7;
+            border-radius: 6px;
+            padding: 8px 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            border-left: 4px solid #3182ce;
+        }
+        .flow-branch .trigger-item.alert {
+            border-left-color: #e53e3e;
+            background: #fff5f5;
+        }
+        .flow-branch .trigger-item.info {
+            border-left-color: #38a169;
+            background: #f0fff4;
+        }
+
+        /* Pipeline Visual */
+        .pipeline {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            padding: 15px 0;
+            margin: 15px 0;
+        }
+        .pipeline-stage {
+            background: linear-gradient(135deg, #ebf8ff, #bee3f8);
+            border: 2px solid #3182ce;
+            border-radius: 8px;
+            padding: 10px 16px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a365d;
+            min-width: 110px;
+            flex-shrink: 0;
+        }
+        .pipeline-stage.new { background: linear-gradient(135deg, #c6f6d5, #9ae6b4); border-color: #38a169; }
+        .pipeline-stage.risk { background: linear-gradient(135deg, #fed7d7, #feb2b2); border-color: #e53e3e; }
+        .pipeline-stage.active { background: linear-gradient(135deg, #fefcbf, #faf089); border-color: #d69e2e; }
+        .pipeline-stage.done { background: linear-gradient(135deg, #c6f6d5, #68d391); border-color: #2f855a; }
+        .pipeline-stage.hold { background: linear-gradient(135deg, #e9d8fd, #d6bcfa); border-color: #805ad5; }
+        .pipeline-arrow {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            color: #a0aec0;
+            padding: 0 4px;
+        }
+
+        /* Comparison Box */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .comparison .old-box {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .comparison .new-box {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .comparison h4 {
+            margin-top: 0 !important;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge.high { background: #fed7d7; color: #c53030; }
+        .badge.medium { background: #fefcbf; color: #975a16; }
+        .badge.low { background: #c6f6d5; color: #276749; }
+        .badge.critical { background: #e53e3e; color: white; }
+        .badge.pending { background: #fefcbf; color: #975a16; }
+
+        /* Phase Cards */
+        .phase-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .phase-header {
+            background: linear-gradient(135deg, #1a365d, #2b6cb0);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .phase-header h4 {
+            color: white;
+            margin: 0;
+            font-size: 18px;
+        }
+        .phase-header .phase-duration {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        .phase-body {
+            padding: 20px 25px;
+        }
+
+        /* Timeline Bar */
+        .timeline-bar {
+            background: #edf2f7;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 25px 0;
+        }
+        .timeline-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .timeline-label {
+            width: 200px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+            flex-shrink: 0;
+        }
+        .timeline-track {
+            flex: 1;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        .timeline-fill {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .timeline-fill.p1 { background: #e53e3e; left: 0; width: 11.1%; }
+        .timeline-fill.p2 { background: #dd6b20; left: 11.1%; width: 11.1%; }
+        .timeline-fill.p3 { background: #d69e2e; left: 22.2%; width: 11.1%; }
+        .timeline-fill.p4 { background: #38a169; left: 33.3%; width: 16.7%; }
+        .timeline-fill.p5 { background: #3182ce; left: 50%; width: 16.7%; }
+        .timeline-fill.p6 { background: #805ad5; left: 66.7%; width: 11.1%; }
+        .timeline-fill.p7 { background: #d53f8c; left: 77.8%; width: 11.1%; }
+        .timeline-fill.p8 { background: #1a365d; left: 88.9%; width: 11.1%; }
+
+        .week-markers {
+            display: flex;
+            margin-left: 200px;
+            margin-top: 5px;
+        }
+        .week-markers span {
+            flex: 1;
+            text-align: center;
+            font-size: 10px;
+            color: #a0aec0;
+        }
+
+        /* Callout */
+        .callout {
+            background: #ebf8ff;
+            border-left: 5px solid #3182ce;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+        .callout.warning {
+            background: #fffaf0;
+            border-left-color: #dd6b20;
+        }
+        .callout.danger {
+            background: #fff5f5;
+            border-left-color: #e53e3e;
+        }
+        .callout.success {
+            background: #f0fff4;
+            border-left-color: #38a169;
+        }
+
+        /* Footer */
+        .doc-footer {
+            text-align: center;
+            padding: 30px;
+            color: #a0aec0;
+            font-size: 13px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 40px;
+        }
+
+        /* Print */
+        @media print {
+            body { background: white; }
+            .section { box-shadow: none; border: 1px solid #e2e8f0; }
+            .cover-page { min-height: auto; padding: 80px 40px; }
+        }
+
+        @media (max-width: 768px) {
+            .comparison { grid-template-columns: 1fr; }
+            .pipeline { flex-wrap: wrap; }
+            .cover-page h1 { font-size: 28px; }
+            .cover-page .meta-box { padding: 20px; }
+            .cover-page .meta-box strong { width: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover-page">
+    <h1>BODYRIGHT HEALTHCARE</h1>
+    <div class="subtitle">Salesforce to GoHighLevel Migration - Complete Project Document</div>
+    <div class="meta-box">
+        <p><strong>Client:</strong> Mark Schneider - Bodyright Healthcare</p>
+        <p><strong>Project Manager:</strong> Craig Edwards - BEAM Automation</p>
+        <p><strong>GHL Specialist:</strong> Faraz Ahmed - Automate Accelerator</p>
+        <p><strong>Scoping Session:</strong> February 12, 2026</p>
+        <p><strong>SF Switch-Off Target:</strong> June / July 2026</p>
+        <p><strong>Version:</strong> 1.0</p>
+    </div>
+</div>
+
+<div class="container">
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc" id="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+        <li><a href="#s1">Project Overview</a></li>
+        <li><a href="#s2">Current Systems Inventory</a></li>
+        <li><a href="#s3">Contact Data Structure</a></li>
+        <li><a href="#s4">Process Flow - OLD (Current Salesforce Process)</a></li>
+        <li><a href="#s5">Process Flow - NEW (GHL Implementation)</a></li>
+        <li><a href="#s6">Detailed Process Comparison (Old vs. New)</a></li>
+        <li><a href="#s7">Automations &amp; Email Templates</a></li>
+        <li><a href="#s8">Integration Requirements</a></li>
+        <li><a href="#s9">Project Phases &amp; Timeline</a></li>
+        <li><a href="#s10">Mark's Homework / Action Items</a></li>
+        <li><a href="#s11">Key Decisions &amp; Notes</a></li>
+        <li><a href="#s12">Appendix: Form Fields</a></li>
+    </ol>
+</div>
+
+<!-- SECTION 1: PROJECT OVERVIEW -->
+<div class="section" id="s1">
+    <h2>1. Project Overview</h2>
+
+    <h3>Why Switching from Salesforce to GHL?</h3>
+    <div class="comparison">
+        <div class="old-box">
+            <h4 style="color:#c53030; margin-top:0;">Salesforce Problems</h4>
+            <ul>
+                <li>Costs <strong>$5,000/month</strong> - massively overpriced</li>
+                <li>Enterprise version sold unnecessarily (less than 2,000 contacts)</li>
+                <li>Very <strong>clunky and not user-friendly</strong></li>
+                <li>Pardot used ONLY for monthly newsletter - waste of money</li>
+                <li><strong>No integration</strong> between Salesforce and PracSuite</li>
+                <li>Difficult to send bulk emails or newsletters</li>
+                <li>Limited AI capabilities (would cost ~$20K extra)</li>
+                <li>Poor support from Salesforce</li>
+            </ul>
+        </div>
+        <div class="new-box">
+            <h4 style="color:#276749; margin-top:0;">GHL Benefits</h4>
+            <ul>
+                <li><strong>Fraction of the cost</strong> of Salesforce</li>
+                <li>Right-sized for Bodyright's needs</li>
+                <li><strong>User-friendly interface</strong></li>
+                <li>Built-in forms, landing pages, email, SMS, calendar</li>
+                <li>API/Zapier integration with PracSuite possible</li>
+                <li>Easy newsletter sending</li>
+                <li>AI capabilities built-in (Phase 2)</li>
+                <li>No per-user cost increases</li>
+            </ul>
+        </div>
+    </div>
+
+    <h3>Project Goal</h3>
+    <p>Migrate all CRM, automation, lead management, referral tracking, email marketing, and nurturing workflows from <strong>Salesforce / Pardot / JotForm / ActiveCampaign</strong> into <strong>GoHighLevel (GHL)</strong> while maintaining integration with <strong>PracSuite</strong> (practice management software) and <strong>PandaDoc</strong> (digital signatures).</p>
+</div>
+
+<!-- SECTION 2: CURRENT SYSTEMS -->
+<div class="section" id="s2">
+    <h2>2. Current Systems Inventory</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>System</th>
+                <th>Current Purpose</th>
+                <th>After Migration</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td><strong>Salesforce</strong></td><td>CRM - Referral tracking, contact management, pipeline stages, email templates</td><td><span class="decommission">DECOMMISSION</span> (June/July)</td></tr>
+            <tr><td>2</td><td><strong>Pardot</strong> (Salesforce)</td><td>Marketing - Monthly newsletters to case managers</td><td><span class="decommission">DECOMMISSION</span></td></tr>
+            <tr><td>3</td><td><strong>JotForm</strong></td><td>Referral forms on website (~$1,000/year)</td><td><span class="decommission">DECOMMISSION</span> (Rebuild in GHL)</td></tr>
+            <tr><td>4</td><td><strong>ActiveCampaign</strong></td><td>Email marketing (synced with Salesforce)</td><td><span class="decommission">DECOMMISSION</span></td></tr>
+            <tr><td>5</td><td><strong>Calendly</strong></td><td>Booking/scheduling</td><td><span class="decommission">DECOMMISSION</span> (Use GHL Calendar)</td></tr>
+            <tr><td>6</td><td><strong>PracSuite</strong></td><td>Practice management software (main work hub)</td><td><span class="keep">KEEP</span> - Integrate with GHL</td></tr>
+            <tr><td>7</td><td><strong>PandaDoc</strong></td><td>Digital signatures for service agreements</td><td><span class="keep">KEEP</span> - Integrate with GHL</td></tr>
+            <tr><td>8</td><td><strong>Zapier</strong></td><td>Automations between systems</td><td><span class="keep">KEEP</span> - GHL-PracSuite bridge</td></tr>
+            <tr><td>9</td><td><strong>Google Drive</strong></td><td>Document storage (auto-created folders)</td><td><span class="keep">KEEP</span> - Integrate with GHL</td></tr>
+            <tr><td>10</td><td><strong>Gmail</strong></td><td>Email (auto-created labels)</td><td><span class="keep">KEEP</span> - Integrate with GHL</td></tr>
+            <tr><td>11</td><td><strong>WordPress</strong></td><td>Website (bodyright.com.au)</td><td><span class="keep">KEEP</span> - Modify for GHL</td></tr>
+            <tr><td>12</td><td><strong>LinkedIn</strong></td><td>Outreach for aged care leads</td><td><span class="keep">KEEP</span> - Feed into GHL</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 3: CONTACT DATA -->
+<div class="section" id="s3">
+    <h2>3. Contact Data Structure</h2>
+
+    <div class="callout">
+        <strong>Total Contacts:</strong> Less than 2,000 across all groups
+    </div>
+
+    <h3>Contact Groups in Salesforce</h3>
+    <table>
+        <thead>
+            <tr><th>Group</th><th>Description</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Accounts (Providers)</strong></td><td>Aged care providers / organizations</td><td>Jewish Care Victoria, Martin Luther Homes, Benitas, Blue Cross</td></tr>
+            <tr><td><strong>Contacts (Case Managers)</strong></td><td>Case managers at provider organizations</td><td>People who refer clients</td></tr>
+            <tr><td><strong>Community Care Clients</strong></td><td>Supported home / community care clients</td><td>Clients receiving home care services</td></tr>
+            <tr><td><strong>NDIS Clients</strong></td><td>National Disability Insurance Scheme clients</td><td>Clients with NDIS packages</td></tr>
+            <tr><td><strong>Private Clients (Households)</strong></td><td>Self-referred private clients</td><td>e.g. Rosaline Hines</td></tr>
+            <tr><td><strong>DVA Clients</strong></td><td>Dept. of Veterans' Affairs clients</td><td>Usually self-referred</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Referral Types</h3>
+    <table>
+        <thead>
+            <tr><th>#</th><th>Referral Type</th><th>Typically Referred By</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td>Supported Home</td><td>Case Manager (from provider)</td></tr>
+            <tr><td>2</td><td>NDIS</td><td>Support Coordinator (sometimes self-referred)</td></tr>
+            <tr><td>3</td><td>Private</td><td>Self-referred</td></tr>
+            <tr><td>4</td><td>DVA (Veteran Affairs)</td><td>Usually self-referred</td></tr>
+            <tr><td>5</td><td>Residential Care</td><td>Provider organizations</td></tr>
+            <tr><td>6</td><td>Restorative Pathway</td><td>Case Manager</td></tr>
+            <tr><td>7</td><td>CHSP</td><td>Case Manager</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 4: OLD PROCESS FLOWS -->
+<div class="section" id="s4">
+    <h2>4. Process Flow - OLD (Current Salesforce Process)</h2>
+
+    <!-- FLOW A -->
+    <h3>FLOW A: Referral Process (Main Business Flow)</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step highlight">
+                <div class="step-title">WEBSITE (bodyright.com.au)</div>
+                <div class="step-detail">Two buttons at top: "Supported Home Referral" + "NDIS Referral"</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step">
+                <div class="step-title">JOTFORM (External Form)</div>
+                <div class="step-detail">Case Manager fills out referral form with: Date, Referral Type, Provider, Care Partner, Participant Details, Health History, Budget, Safety/Risk, Next of Kin, GP, Document Upload, How Heard About Us</div>
+            </div>
+            <div class="flow-arrow">&darr; ON SUBMIT</div>
+
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                <div class="flow-step" style="flex:1; min-width:250px;">
+                    <div class="step-title">EMAIL #1 (From JotForm)</div>
+                    <div class="step-detail">"Thanks for your referral" sent to Case Manager</div>
+                </div>
+                <div class="flow-step" style="flex:1; min-width:250px;">
+                    <div class="step-title">DATA &rarr; SALESFORCE</div>
+                    <div class="step-detail">JotForm pushes all form data to Salesforce</div>
+                </div>
+            </div>
+
+            <div class="flow-arrow">&darr; Salesforce Triggers</div>
+
+            <div class="flow-branch">
+                <div class="trigger-item info">Zapier #1: Auto-create <strong>Google Drive Folder</strong> for new client</div>
+                <div class="trigger-item info">Zapier #2: Auto-create <strong>Gmail Label</strong> with client name</div>
+                <div class="trigger-item alert">IF "Limited Budget" selected &rarr; <strong>Email to Admin</strong> ("Budget is low" reminder)</div>
+                <div class="trigger-item alert">IF Risk Factors (Yes/Unknown to safety questions) &rarr; <strong>RED BANNER</strong> appears on referral. Must create Risk Management Plan (call case manager, document plan, saving turns off banner)</div>
+                <div class="trigger-item">IF First-Time Referrer &rarr; <strong>Email to Michelle</strong> (Sales) for personal outreach call</div>
+                <div class="trigger-item">IF 10th Referral from same referrer &rarr; <strong>Notification</strong></div>
+                <div class="trigger-item">IF 50th Referral from same referrer &rarr; <strong>Notification</strong></div>
+                <div class="trigger-item">IF 90 Days No Referral &rarr; <strong>Reminder email</strong> to admin</div>
+            </div>
+
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step highlight">
+                <div class="step-title">SALESFORCE PIPELINE (Kanban Board)</div>
+            </div>
+        </div>
+
+        <div class="pipeline" style="margin-top:15px;">
+            <div class="pipeline-stage new">NEW<br>REFERRAL</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage">ASSIGN<br>PRACTITIONER</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage active">BOOK<br>APPOINTMENT</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage">IN PROGRESS<br><small>(Email to Case Mgr)</small></div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage hold">ON HOLD</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage" style="background:linear-gradient(135deg,#fed7d7,#feb2b2); border-color:#e53e3e;">CANCELLED</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage done">COMPLETE</div>
+        </div>
+
+        <div class="flow-steps" style="margin-top:15px;">
+            <div class="flow-step danger">
+                <div class="step-title">PROCESS STOPS IN SALESFORCE HERE</div>
+                <div class="step-detail">No integration between Salesforce &amp; PracSuite</div>
+            </div>
+            <div class="flow-arrow">&darr; MANUAL DATA ENTRY</div>
+            <div class="flow-step warning">
+                <div class="step-title">VA (Philippines) or Office Staff</div>
+                <div class="step-detail">Manually copies all fields from Salesforce into PracSuite. Different field names between systems. Time-consuming and error-prone.</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step success">
+                <div class="step-title">PRACSUITE (Practice Management)</div>
+                <div class="step-detail">Patient file created. Appointments managed. Clinical notes. All ongoing work happens here.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOW B -->
+    <h3>FLOW B: Service Agreements (NDIS Clients)</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-title">NDIS Referral in Salesforce</div>
+                <div class="step-detail">Form data stored: Name, DOB, Address, Guardian, Services, Costs, etc.</div>
+            </div>
+            <div class="flow-arrow">&darr; MANUAL</div>
+            <div class="flow-step warning">
+                <div class="step-title">Staff Manually Extracts Fields</div>
+                <div class="step-detail">Copy client details from Salesforce referral into Service Agreement template (Google Doc). 6-7 variable fields per client.</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step">
+                <div class="step-title">Review Document</div>
+                <div class="step-detail">Staff reviews pre-filled agreement</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step">
+                <div class="step-title">Send via PandaDoc for Signing</div>
+                <div class="step-detail">Previously DocuSign (too expensive). Sometimes printed hard copy. Sometimes practitioner helps sign on iPad.</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step success">
+                <div class="step-title">Confirmation of Signed Document</div>
+                <div class="step-detail">PandaDoc sends back signed copy</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOW C -->
+    <h3>FLOW C: Leads from Website (Contact Form)</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-title">Website Contact Form</div>
+                <div class="step-detail">Name, Email, Phone, Company, "Inquiries About" dropdown</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step danger">
+                <div class="step-title">Salesforce Leads (All Mixed Together)</div>
+                <div class="step-detail">No segmentation. Mark gets ONE email notification. No nurturing. No automation. Very poor management. Many leads lost.</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step warning">
+                <div class="step-title">Manual Follow-Up (or often NO follow-up)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOW D -->
+    <h3>FLOW D: Newsletter (via Pardot)</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step warning">
+                <div class="step-title">Pardot (Salesforce Marketing)</div>
+                <div class="step-detail">Monthly newsletter. Very clunky/difficult to use. Peter (assistant) creates and sends. Takes weeks to figure out how to send a simple blast.</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step danger">
+                <div class="step-title">ONE Generic Newsletter &rarr; All Contacts</div>
+                <div class="step-detail">No segmentation by service type. Same content to everyone.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOW E -->
+    <h3>FLOW E: Aged Care Lead Nurturing</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step danger">
+                <div class="step-title">NO PROCESS EXISTS</div>
+                <div class="step-detail">Using LinkedIn manually. No CRM tracking after initial contact. No nurturing sequence. Long sales cycle (up to 2 years). No automation at all.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOW F -->
+    <h3>FLOW F: Referrer Milestone Tracking</h3>
+    <div class="flow-chart">
+        <div class="flow-branch">
+            <div class="trigger-item">1st Referral &rarr; Email to Michelle (Sales) for personal outreach call</div>
+            <div class="trigger-item">10th Referral &rarr; Notification</div>
+            <div class="trigger-item">50th Referral &rarr; Notification</div>
+            <div class="trigger-item alert">90 Days No Referral &rarr; Reminder email to admin (staff supposed to call referrer - was NOT being done)</div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 5: NEW GHL PROCESS -->
+<div class="section" id="s5">
+    <h2>5. Process Flow - NEW (GHL Implementation)</h2>
+
+    <!-- NEW FLOW A -->
+    <h3>FLOW A: Referral Process (Rebuilt in GHL)</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step highlight">
+                <div class="step-title">WEBSITE (bodyright.com.au)</div>
+                <div class="step-detail">SINGLE BUTTON: "All Referrals" (replaces 2 buttons)</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step success">
+                <div class="step-title">GHL LANDING PAGE (referrals.bodyright.com.au)</div>
+                <div class="step-detail">Subdomain hosted on GHL. Info about each referral type. Boxes/tiles for each type with links. Educational content about referral process. Tracks open rates.</div>
+            </div>
+            <div class="flow-arrow">&darr; Select Referral Type</div>
+
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin:10px 0;">
+                <div class="pipeline-stage" style="font-size:11px;">Support<br>at Home</div>
+                <div class="pipeline-stage" style="font-size:11px;">NDIS</div>
+                <div class="pipeline-stage" style="font-size:11px;">Private</div>
+                <div class="pipeline-stage" style="font-size:11px;">DVA</div>
+                <div class="pipeline-stage" style="font-size:11px;">Residential<br>Care</div>
+                <div class="pipeline-stage" style="font-size:11px;">Restorative<br>Pathway</div>
+                <div class="pipeline-stage" style="font-size:11px;">CHSP</div>
+            </div>
+
+            <div class="flow-step success">
+                <div class="step-title">GHL FORM (Built-in)</div>
+                <div class="step-detail">Same fields as JotForm. Conditional logic (returning client skips pages). Hover help boxes (CSS). File upload. Mandatory: Mobile &amp; Email. No JotForm needed.</div>
+            </div>
+            <div class="flow-arrow">&darr; ON SUBMIT</div>
+
+            <div class="flow-step success">
+                <div class="step-title">GHL CONTACT CREATED + AUTO-TAGGED + AUTO-PIPELINE</div>
+                <div class="step-detail">All data stored natively in GHL. Auto-tagged by referral type, service type, client type.</div>
+            </div>
+
+            <div class="flow-branch">
+                <div class="trigger-item info">Thank You Email to Case Manager (with brochure/flipbook download based on service selected)</div>
+                <div class="trigger-item info">Zapier &rarr; Create Google Drive Folder</div>
+                <div class="trigger-item info">Zapier &rarr; Create Gmail Label</div>
+                <div class="trigger-item info"><strong>Zapier/API &rarr; AUTO-PUSH data to PracSuite</strong> (mapped fields - NO manual entry!)</div>
+                <div class="trigger-item alert">IF "Limited Budget" &rarr; Email to Admin</div>
+                <div class="trigger-item alert">IF Risk Factors &rarr; Move to "Safety &amp; Risk Assessment" pipeline stage</div>
+                <div class="trigger-item">IF First-Time Referrer &rarr; Email to Michelle + Start Education Journey (2-3 emails over ~1 week)</div>
+                <div class="trigger-item">IF 10th/50th Referral &rarr; Milestone notification</div>
+                <div class="trigger-item">IF 90 Days No Referral &rarr; Reminder to admin</div>
+            </div>
+
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step success">
+                <div class="step-title">GHL PIPELINE: REFERRALS</div>
+            </div>
+        </div>
+
+        <div class="pipeline" style="margin-top:15px;">
+            <div class="pipeline-stage new">NEW<br>REFERRAL</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage risk">SAFETY &amp;<br>RISK<br><small>(NEW STAGE)</small></div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage">ASSIGN<br>PRACTITIONER</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage active">APPOINTMENT<br>BOOKED<br><small>(Auto-email)</small></div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage">IN<br>PROGRESS</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage hold">ON HOLD</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage" style="background:linear-gradient(135deg,#fed7d7,#feb2b2); border-color:#e53e3e;">CANCELLED</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage done">COMPLETE</div>
+        </div>
+
+        <div class="callout success" style="margin-top:15px;">
+            <strong>Key Improvement:</strong> Data automatically flows to PracSuite via Zapier/API. NO manual data entry required. Saves hours of work and eliminates human error.
+        </div>
+    </div>
+
+    <!-- NEW FLOW B -->
+    <h3>FLOW B: Service Agreements (Automated in GHL)</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step success">
+                <div class="step-title">NDIS Referral Form Submitted in GHL</div>
+                <div class="step-detail">All client fields already captured</div>
+            </div>
+            <div class="flow-arrow">&darr; AUTO</div>
+            <div class="flow-step success">
+                <div class="step-title">Fields Auto-Populate into Service Agreement Template</div>
+                <div class="step-detail">PandaDoc integration or GHL Documents. Name, DOB, Address, Guardian, Services, Costs auto-filled. No manual copy/paste.</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step">
+                <div class="step-title">Staff Reviews Pre-filled Agreement</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step success">
+                <div class="step-title">Send for Signing (PandaDoc / GHL)</div>
+            </div>
+        </div>
+
+        <div class="pipeline" style="margin-top:15px;">
+            <div class="pipeline-stage new">SENT</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage active">OPENED</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage done">SIGNED</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage done">FINAL</div>
+        </div>
+    </div>
+
+    <!-- NEW FLOW C -->
+    <h3>FLOW C: Leads from Website (Rebuilt in GHL)</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step success">
+                <div class="step-title">Updated Website Contact Form</div>
+                <div class="step-detail">Name, Email, Phone, Company, "Inquiries About" dropdown</div>
+            </div>
+            <div class="flow-arrow">&darr; Based on Selection</div>
+
+            <div class="flow-step success">
+                <div class="step-title">GHL Contact Created + Auto-Tagged + Auto-Pipeline</div>
+                <div class="step-detail">NDIS selected &rarr; NDIS Pipeline | Support at Home &rarr; SAH Pipeline | Residential Care &rarr; RC Pipeline</div>
+            </div>
+            <div class="flow-arrow">&darr;</div>
+
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                <div class="flow-step" style="flex:1; min-width:200px;">
+                    <div class="step-title">Option A: Form Qualification</div>
+                    <div class="step-detail">Additional qualifying questions</div>
+                </div>
+                <div class="flow-step" style="flex:1; min-width:200px;">
+                    <div class="step-title">Option B: AI Chatbot Triage</div>
+                    <div class="step-detail">Ask qualifying questions automatically</div>
+                </div>
+            </div>
+
+            <div class="flow-arrow">&darr;</div>
+            <div class="flow-step success">
+                <div class="step-title">IF Qualified &rarr; Assign to Team + Calendar Booking Link</div>
+                <div class="step-detail">GHL Calendar replaces Calendly. Syncs with Outlook/Gmail. Prospect picks available time. Auto-confirmation &amp; reminders.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW FLOW D -->
+    <h3>FLOW D: Newsletters (Rebuilt in GHL)</h3>
+    <div class="flow-chart">
+        <div class="flow-steps">
+            <div class="flow-step success">
+                <div class="step-title">GHL Email Campaigns</div>
+                <div class="step-detail">Pre-built templates with headers/footers. Peter edits middle content. Easy to use - no technical knowledge. Send blasts quickly. Track open rates &amp; clicks.</div>
+            </div>
+            <div class="flow-arrow">&darr; Segmented by Tags</div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin:10px 0;">
+                <div class="pipeline-stage new" style="font-size:11px;">Home Care<br>Newsletter</div>
+                <div class="pipeline-stage active" style="font-size:11px;">Aged Care<br>Newsletter</div>
+                <div class="pipeline-stage" style="font-size:11px; background:linear-gradient(135deg,#e9d8fd,#d6bcfa); border-color:#805ad5;">NDIS<br>Newsletter</div>
+                <div class="pipeline-stage" style="font-size:11px;">General<br>Newsletter</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW FLOW E -->
+    <h3>FLOW E: Aged Care Lead Nurturing (NEW - Built in GHL)</h3>
+    <div class="flow-chart">
+        <h4>Entry Points:</h4>
+        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:15px;">
+            <div class="flow-step" style="flex:1; min-width:250px;">
+                <div class="step-title">A) Landing Page Form Fill</div>
+                <div class="step-detail">Prospect finds via LinkedIn/website and fills out form</div>
+            </div>
+            <div class="flow-step" style="flex:1; min-width:250px;">
+                <div class="step-title">B) Manual Entry by Staff</div>
+                <div class="step-detail">Michelle/staff adds contact after phone conversation (verbal consent)</div>
+            </div>
+        </div>
+
+        <div class="flow-arrow">&darr;</div>
+        <div class="flow-step success">
+            <div class="step-title">GHL Contact Created + Tagged "Aged Care Prospect"</div>
+        </div>
+        <div class="flow-arrow">&darr;</div>
+
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:280px;">
+                <div class="flow-step" style="margin-bottom:10px;">
+                    <div class="step-title">Trail 1: Form Fill Journey</div>
+                    <div class="step-detail">
+                        5-7 emails over 12 months:<br>
+                        - Email 1: Welcome + intro to Bodyright<br>
+                        - Email 2: Services overview<br>
+                        - Email 3: Case studies<br>
+                        - Email 4-7: Specific info, updates<br>
+                        - Each email has CTA: "Book a Consultation"<br>
+                        - IF CTA clicked &rarr; STOP drip &rarr; Booking flow
+                    </div>
+                </div>
+            </div>
+            <div style="flex:1; min-width:280px;">
+                <div class="flow-step" style="margin-bottom:10px;">
+                    <div class="step-title">Trail 2: Phone/Verbal Consent</div>
+                    <div class="step-detail">
+                        Reminder workflow at agreed intervals:<br>
+                        - Contact in X months as requested<br>
+                        - SMS + Email reminders<br>
+                        - Track contract renewal dates<br>
+                        - Increase outreach closer to renewal
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flow-arrow">&darr;</div>
+        <h4>Aged Care Sales Pipeline:</h4>
+        <div class="pipeline">
+            <div class="pipeline-stage new">FIRST<br>CONTACT</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage">MEETING<br>BOOKED</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage active">FIRST<br>MEETING<br>DONE</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage">ACTIVE<br>PROPOSAL</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage hold">NOT NOW<br>NURTURING</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage done">WON<br>CLIENT</div>
+        </div>
+        <p style="font-size:13px; color:#718096; margin-top:10px;"><strong>Channels:</strong> Email + SMS + Video</p>
+    </div>
+
+    <!-- NEW FLOW F -->
+    <h3>FLOW F: Case Manager Pipeline (NEW)</h3>
+    <div class="flow-chart">
+        <div class="pipeline">
+            <div class="pipeline-stage new">FORM<br>FILLED</div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage">FIRST-TIME<br>REFERRER<br><small>(Education journey)</small></div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage active">ACTIVE<br>REFERRER<br><small>(Track milestones)</small></div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-stage" style="background:linear-gradient(135deg,#fed7d7,#feb2b2); border-color:#e53e3e;">INACTIVE<br>90 DAYS<br><small>(Reminder alert)</small></div>
+        </div>
+        <div class="flow-branch" style="margin-top:10px;">
+            <div class="trigger-item info">First-Time Referrer &rarr; Michelle notified + 2-3 education emails over 1 week (services, how to use platform, brochure/flipbook)</div>
+            <div class="trigger-item">10th Referral Milestone &rarr; Notification</div>
+            <div class="trigger-item">50th Referral Milestone &rarr; Notification</div>
+            <div class="trigger-item alert">90 Days No Referral &rarr; Reminder to admin &rarr; Staff calls to check in</div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 6: COMPARISON -->
+<div class="section" id="s6">
+    <h2>6. Detailed Process Comparison (Old vs. New)</h2>
+
+    <h3>6.1 Referral Form Submission</h3>
+    <table>
+        <thead><tr><th>Aspect</th><th style="background:#c53030;">OLD Process</th><th style="background:#276749;">NEW GHL Process</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Form Location</strong></td><td>JotForm (external)</td><td>GHL Form (built-in)</td></tr>
+            <tr><td><strong>Access</strong></td><td>2 buttons on website &rarr; separate JotForm links</td><td>1 button &rarr; GHL Landing Page (subdomain) &rarr; select type</td></tr>
+            <tr><td><strong>Form Types</strong></td><td>~6-7 different JotForm forms</td><td>~6-7 GHL forms (same fields)</td></tr>
+            <tr><td><strong>Returning Client</strong></td><td>JotForm conditional logic (yes = skip pages)</td><td>GHL conditional logic (same)</td></tr>
+            <tr><td><strong>File Upload</strong></td><td>JotForm upload &rarr; Google Drive via Zapier</td><td>GHL upload + Zapier to Google Drive</td></tr>
+            <tr><td><strong>Auto-Number</strong></td><td>Salesforce auto-generates referral #</td><td>GHL auto-generates</td></tr>
+            <tr><td><strong>Cost</strong></td><td>JotForm license + Salesforce license</td><td>Included in GHL</td></tr>
+        </tbody>
+    </table>
+
+    <h3>6.2 Post-Submission Automations</h3>
+    <table>
+        <thead><tr><th>Automation</th><th style="background:#c53030;">OLD</th><th style="background:#276749;">NEW</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Google Drive Folder</strong></td><td>Zapier (JotForm &rarr; SF &rarr; Zapier &rarr; GDrive)</td><td>Zapier (GHL &rarr; GDrive)</td></tr>
+            <tr><td><strong>Gmail Label</strong></td><td>Zapier (SF trigger &rarr; Gmail)</td><td>Zapier (GHL trigger &rarr; Gmail)</td></tr>
+            <tr><td><strong>Limited Budget Alert</strong></td><td>Salesforce email template &rarr; Admin</td><td>GHL workflow &rarr; Admin email</td></tr>
+            <tr><td><strong>Risk Flag</strong></td><td>Red banner in SF + document plan</td><td>Pipeline stage "Safety &amp; Risk" + internal form</td></tr>
+            <tr><td><strong>First-Time Referrer</strong></td><td>SF &rarr; Email to Michelle</td><td>GHL &rarr; Michelle + education sequence</td></tr>
+            <tr><td><strong>Milestones</strong></td><td>SF notification</td><td>GHL workflow notification</td></tr>
+            <tr><td><strong>90-Day Inactivity</strong></td><td>SF &rarr; Reminder email</td><td>GHL workflow &rarr; Reminder + task</td></tr>
+        </tbody>
+    </table>
+
+    <h3>6.3 Data Push to PracSuite</h3>
+    <table>
+        <thead><tr><th>Aspect</th><th style="background:#c53030;">OLD</th><th style="background:#276749;">NEW</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Method</strong></td><td>Manual data entry (VA copies from SF)</td><td>Zapier/API (auto-push from GHL)</td></tr>
+            <tr><td><strong>Speed</strong></td><td>Hours delay</td><td>Instant (on form submission)</td></tr>
+            <tr><td><strong>Accuracy</strong></td><td>Human error risk</td><td>Automated - no errors</td></tr>
+            <tr><td><strong>Field Mapping</strong></td><td>N/A (manual)</td><td>GHL fields remapped to PracSuite fields</td></tr>
+        </tbody>
+    </table>
+
+    <h3>6.4 Service Agreements (NDIS)</h3>
+    <table>
+        <thead><tr><th>Aspect</th><th style="background:#c53030;">OLD</th><th style="background:#276749;">NEW</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Template</strong></td><td>Google Doc</td><td>PandaDoc / GHL Documents</td></tr>
+            <tr><td><strong>Data Population</strong></td><td>Manual copy from Salesforce</td><td>Auto-populate from GHL form fields</td></tr>
+            <tr><td><strong>Sending</strong></td><td>PandaDoc (manual trigger)</td><td>Auto-triggered on pipeline stage move</td></tr>
+            <tr><td><strong>Tracking</strong></td><td>Manual</td><td>Pipeline: Sent &rarr; Opened &rarr; Signed &rarr; Complete</td></tr>
+        </tbody>
+    </table>
+
+    <h3>6.5 Leads Management</h3>
+    <table>
+        <thead><tr><th>Aspect</th><th style="background:#c53030;">OLD</th><th style="background:#276749;">NEW</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Segmentation</strong></td><td>None - all mixed</td><td>Auto-tagged + auto-pipeline by inquiry type</td></tr>
+            <tr><td><strong>Qualification</strong></td><td>None</td><td>Form questions + optional AI chatbot</td></tr>
+            <tr><td><strong>Nurturing</strong></td><td>None</td><td>Lead nurture sequences per service type</td></tr>
+            <tr><td><strong>Booking</strong></td><td>No system</td><td>GHL Calendar (synced with Outlook/Gmail)</td></tr>
+        </tbody>
+    </table>
+
+    <h3>6.6 Newsletters</h3>
+    <table>
+        <thead><tr><th>Aspect</th><th style="background:#c53030;">OLD</th><th style="background:#276749;">NEW</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Platform</strong></td><td>Pardot (very difficult)</td><td>GHL Email Campaigns</td></tr>
+            <tr><td><strong>Segmentation</strong></td><td>None (1 generic newsletter)</td><td>3-4 segmented newsletters</td></tr>
+            <tr><td><strong>Ease of Use</strong></td><td>Weeks to figure out</td><td>Minutes to edit &amp; send</td></tr>
+            <tr><td><strong>Types</strong></td><td>1 generic monthly</td><td>Home Care, Aged Care, NDIS, General</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 7: AUTOMATIONS -->
+<div class="section" id="s7">
+    <h2>7. Automations &amp; Email Templates</h2>
+
+    <h3>Email Templates to Build</h3>
+    <table>
+        <thead><tr><th>#</th><th>Email Template</th><th>Trigger</th><th>Recipient</th></tr></thead>
+        <tbody>
+            <tr><td>1</td><td>Thank You for Referral</td><td>Form submission</td><td>Case Manager</td></tr>
+            <tr><td>2</td><td>Budget Email to Admin</td><td>"Limited Budget" selected</td><td>Admin</td></tr>
+            <tr><td>3</td><td>Confirm Appointment to Case Manager</td><td>Appointment booked in pipeline</td><td>Case Manager</td></tr>
+            <tr><td>4</td><td>First-Time Referrer Welcome</td><td>First form from new referrer</td><td>Case Manager</td></tr>
+            <tr><td>5</td><td>First-Time Referrer - Notify Michelle</td><td>First form from new referrer</td><td>Michelle (Sales)</td></tr>
+            <tr><td>6</td><td>10th Referral Milestone</td><td>10th referral from same referrer</td><td>Admin/Michelle</td></tr>
+            <tr><td>7</td><td>50th Referral Milestone</td><td>50th referral from same referrer</td><td>Admin/Michelle</td></tr>
+            <tr><td>8</td><td>90-Day No Referral Reminder</td><td>90 days since last referral</td><td>Admin</td></tr>
+            <tr><td>9</td><td>Risk Identified Alert</td><td>Safety question = Yes/Unknown</td><td>Admin</td></tr>
+            <tr><td>10</td><td>Education Journey Email 1</td><td>New referrer (first time)</td><td>Case Manager</td></tr>
+            <tr><td>11</td><td>Education Journey Email 2</td><td>3 days after Email 1</td><td>Case Manager</td></tr>
+            <tr><td>12</td><td>Education Journey Email 3</td><td>7 days after Email 1</td><td>Case Manager</td></tr>
+            <tr><td>13</td><td>Service Agreement Sent</td><td>SA sent for signing</td><td>Client/Guardian</td></tr>
+            <tr><td>14</td><td>Service Agreement Signed</td><td>SA signed</td><td>Admin + Client</td></tr>
+            <tr><td>15</td><td>Specific Allied Health Request</td><td>Checkbox ticked on form</td><td>Admin (call them)</td></tr>
+        </tbody>
+    </table>
+
+    <div class="callout warning">
+        <strong>Note:</strong> Mark has a full list of all email templates from the Salesforce developer. He needs to confirm which ones are still in use. Additional templates may be added.
+    </div>
+
+    <h3>Automation Workflows to Build</h3>
+    <table>
+        <thead><tr><th>#</th><th>Workflow</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td>1</td><td>Referral Form Submission</td><td>Tag contact, assign to pipeline, trigger emails, create GDrive folder, create Gmail label</td></tr>
+            <tr><td>2</td><td>Risk Assessment</td><td>If risk detected &rarr; move to risk stage, require internal form completion</td></tr>
+            <tr><td>3</td><td>Appointment Booking</td><td>When appointment entered &rarr; email case manager with details</td></tr>
+            <tr><td>4</td><td>First-Time Referrer Journey</td><td>Detect new referrer &rarr; notify Michelle &rarr; 3-email education sequence</td></tr>
+            <tr><td>5</td><td>Referral Milestones</td><td>Track referral count &rarr; notify at 10th, 50th</td></tr>
+            <tr><td>6</td><td>Inactivity Alert</td><td>90 days no referral &rarr; notify admin</td></tr>
+            <tr><td>7</td><td>Service Agreement Flow</td><td>Auto-populate SA &rarr; send for signing &rarr; track status</td></tr>
+            <tr><td>8</td><td>Lead Qualification</td><td>Contact form &rarr; tag &rarr; qualify &rarr; pipeline &rarr; booking link</td></tr>
+            <tr><td>9</td><td>Aged Care Nurturing (Form)</td><td>Form fill &rarr; 5-7 email drip over 12 months</td></tr>
+            <tr><td>10</td><td>Aged Care Nurturing (Phone)</td><td>Manual entry &rarr; reminder workflow at agreed intervals</td></tr>
+            <tr><td>11</td><td>Newsletter Campaigns</td><td>Segmented blasts (Home Care, Aged Care, NDIS, General)</td></tr>
+            <tr><td>12</td><td>GHL &rarr; PracSuite Push</td><td>Zapier/API workflow to push mapped fields</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 8: INTEGRATIONS -->
+<div class="section" id="s8">
+    <h2>8. Integration Requirements</h2>
+
+    <div class="callout danger">
+        <strong>CRITICAL:</strong> PracSuite integration must be verified FIRST (Phase 1) before building anything else. Previous project experience showed that building without verifying API access first can result in wasted work.
+    </div>
+
+    <h3>Primary Integration: GHL &harr; PracSuite</h3>
+    <table>
+        <thead><tr><th>Item</th><th>Detail</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Method</strong></td><td>Zapier (client has account) + PracSuite API</td></tr>
+            <tr><td><strong>Direction</strong></td><td>GHL &rarr; PracSuite (one-way push)</td></tr>
+            <tr><td><strong>Priority</strong></td><td><span class="badge critical">CRITICAL</span></td></tr>
+            <tr><td><strong>API Status</strong></td><td>PracSuite confirmed to have API capabilities. No direct GHL integration - must use Zapier.</td></tr>
+            <tr><td><strong>Data to Push</strong></td><td>Client name, DOB, address, gender, mobile, email, provider, case manager, GP, service type, health history, risk info</td></tr>
+            <tr><td><strong>Field Mapping</strong></td><td>Required - GHL field names differ from PracSuite (Mark to provide spreadsheet)</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Other Integrations</h3>
+    <table>
+        <thead><tr><th>Integration</th><th>Method</th><th>Purpose</th></tr></thead>
+        <tbody>
+            <tr><td>GHL &rarr; Google Drive</td><td>Zapier</td><td>Auto-create client folders, upload documents</td></tr>
+            <tr><td>GHL &rarr; Gmail</td><td>Zapier</td><td>Auto-create client labels</td></tr>
+            <tr><td>GHL &harr; PandaDoc</td><td>Native/Zapier</td><td>Service agreement automation</td></tr>
+            <tr><td>GHL &harr; Calendar</td><td>Native GHL</td><td>Booking/scheduling sync (Outlook/Gmail)</td></tr>
+            <tr><td>GHL &harr; WordPress</td><td>Embed/Subdomain</td><td>Referral button &rarr; GHL landing page</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 9: PHASES & TIMELINE -->
+<div class="section" id="s9">
+    <h2>9. Project Phases &amp; Timeline</h2>
+
+    <h3>Visual Timeline (18 Weeks)</h3>
+    <div class="timeline-bar">
+        <div class="timeline-row">
+            <div class="timeline-label">P1: Integration Research</div>
+            <div class="timeline-track"><div class="timeline-fill p1">W1-2</div></div>
+        </div>
+        <div class="timeline-row">
+            <div class="timeline-label">P2: GHL Setup</div>
+            <div class="timeline-track"><div class="timeline-fill p2">W3-4</div></div>
+        </div>
+        <div class="timeline-row">
+            <div class="timeline-label">P3: Data Migration</div>
+            <div class="timeline-track"><div class="timeline-fill p3">W5-6</div></div>
+        </div>
+        <div class="timeline-row">
+            <div class="timeline-label">P4: Forms &amp; Pages</div>
+            <div class="timeline-track"><div class="timeline-fill p4">W7-9</div></div>
+        </div>
+        <div class="timeline-row">
+            <div class="timeline-label">P5: Automations</div>
+            <div class="timeline-track"><div class="timeline-fill p5">W10-12</div></div>
+        </div>
+        <div class="timeline-row">
+            <div class="timeline-label">P6: Aged Care Nurturing</div>
+            <div class="timeline-track"><div class="timeline-fill p6">W13-14</div></div>
+        </div>
+        <div class="timeline-row">
+            <div class="timeline-label">P7: Newsletters &amp; Dashboards</div>
+            <div class="timeline-track"><div class="timeline-fill p7">W15-16</div></div>
+        </div>
+        <div class="timeline-row">
+            <div class="timeline-label">P8: Testing &amp; Go-Live</div>
+            <div class="timeline-track"><div class="timeline-fill p8">W17-18</div></div>
+        </div>
+        <div class="week-markers">
+            <span>W2</span><span>W4</span><span>W6</span><span>W8</span><span>W10</span><span>W12</span><span>W14</span><span>W16</span><span>W18</span>
+        </div>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase-card">
+        <div class="phase-header">
+            <h4>Phase 1: Integration Research &amp; Verification</h4>
+            <div class="phase-duration">Week 1-2 | <span class="badge critical" style="background:rgba(255,255,255,0.2); color:white;">CRITICAL - DO FIRST</span></div>
+        </div>
+        <div class="phase-body">
+            <table>
+                <thead><tr><th>Task</th><th>Detail</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>1.1</td><td>Verify PracSuite API endpoints &amp; capabilities</td><td>3 days</td></tr>
+                    <tr><td>1.2</td><td>Test Zapier connection GHL &harr; PracSuite</td><td>2 days</td></tr>
+                    <tr><td>1.3</td><td>Verify PandaDoc &harr; GHL integration</td><td>1 day</td></tr>
+                    <tr><td>1.4</td><td>Verify Google Drive Zapier automation</td><td>1 day</td></tr>
+                    <tr><td>1.5</td><td>Verify Gmail Zapier automation</td><td>1 day</td></tr>
+                    <tr><td>1.6</td><td>Document all API limitations/possibilities</td><td>1 day</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Deliverable:</strong> Integration feasibility report</p>
+        </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-card">
+        <div class="phase-header">
+            <h4>Phase 2: GHL Setup &amp; Structure</h4>
+            <div class="phase-duration">Week 3-4</div>
+        </div>
+        <div class="phase-body">
+            <table>
+                <thead><tr><th>Task</th><th>Detail</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>2.1</td><td>Create custom fields in GHL (all referral data fields)</td><td>2 days</td></tr>
+                    <tr><td>2.2</td><td>Set up tags structure (referral type, service type, client type, provider)</td><td>1 day</td></tr>
+                    <tr><td>2.3</td><td>Build Pipeline: Referrals (8 stages)</td><td>1 day</td></tr>
+                    <tr><td>2.4</td><td>Build Pipeline: Case Managers</td><td>1 day</td></tr>
+                    <tr><td>2.5</td><td>Build Pipeline: Service Agreements (4 stages)</td><td>1 day</td></tr>
+                    <tr><td>2.6</td><td>Build Pipeline: Aged Care Sales</td><td>1 day</td></tr>
+                    <tr><td>2.7</td><td>Build Pipeline: Leads (per service type)</td><td>1 day</td></tr>
+                    <tr><td>2.8</td><td>Set up GHL Calendar (sync with Outlook/Gmail)</td><td>1 day</td></tr>
+                    <tr><td>2.9</td><td>Set up user accounts (Mark, Michelle, Peter, staff)</td><td>1 day</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Deliverable:</strong> GHL account fully structured</p>
+        </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-card">
+        <div class="phase-header">
+            <h4>Phase 3: Data Migration</h4>
+            <div class="phase-duration">Week 5-6</div>
+        </div>
+        <div class="phase-body">
+            <table>
+                <thead><tr><th>Task</th><th>Detail</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>3.1</td><td>Export contacts from Salesforce in segmented batches</td><td>2 days</td></tr>
+                    <tr><td>3.2</td><td>Sync ActiveCampaign data to Salesforce (source of truth)</td><td>1 day</td></tr>
+                    <tr><td>3.3</td><td>Clean and deduplicate data</td><td>2 days</td></tr>
+                    <tr><td>3.4</td><td>Map Salesforce fields to GHL custom fields</td><td>1 day</td></tr>
+                    <tr><td>3.5</td><td>Import contacts into GHL with correct tags &amp; pipeline assignments</td><td>2 days</td></tr>
+                    <tr><td>3.6</td><td>Verify data integrity</td><td>1 day</td></tr>
+                    <tr><td>3.7</td><td>Import referral history (if needed)</td><td>1 day</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Deliverable:</strong> All contacts migrated and tagged in GHL</p>
+        </div>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase-card">
+        <div class="phase-header">
+            <h4>Phase 4: Forms &amp; Landing Pages</h4>
+            <div class="phase-duration">Week 7-9</div>
+        </div>
+        <div class="phase-body">
+            <table>
+                <thead><tr><th>Task</th><th>Detail</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>4.1</td><td>Build Referral Landing Page (subdomain: referrals.bodyright.com.au)</td><td>2 days</td></tr>
+                    <tr><td>4.2</td><td>Build Support at Home Referral Form</td><td>2 days</td></tr>
+                    <tr><td>4.3</td><td>Build NDIS Referral Form</td><td>2 days</td></tr>
+                    <tr><td>4.4</td><td>Build Private / DVA / Residential / Restorative / CHSP Forms</td><td>4 days</td></tr>
+                    <tr><td>4.5</td><td>Add conditional logic, hover help boxes, file upload</td><td>2 days</td></tr>
+                    <tr><td>4.6</td><td>Build Contact Form (website leads) + Aged Care Landing Page</td><td>2 days</td></tr>
+                    <tr><td>4.7</td><td>Build Calendar Booking Page (replaces Calendly)</td><td>1 day</td></tr>
+                    <tr><td>4.8</td><td>Update WordPress: Replace 2 buttons with 1 linking to GHL</td><td>1 day</td></tr>
+                    <tr><td>4.9</td><td>Test all forms end-to-end</td><td>2 days</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Deliverable:</strong> All forms live and connected</p>
+        </div>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase-card">
+        <div class="phase-header">
+            <h4>Phase 5: Automation &amp; Email Workflows</h4>
+            <div class="phase-duration">Week 10-12</div>
+        </div>
+        <div class="phase-body">
+            <table>
+                <thead><tr><th>Task</th><th>Detail</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>5.1</td><td>Design &amp; build all email templates (15+ templates)</td><td>3 days</td></tr>
+                    <tr><td>5.2</td><td>Workflow: Referral submission (tag, pipeline, GDrive, Gmail, emails)</td><td>2 days</td></tr>
+                    <tr><td>5.3</td><td>Workflow: Risk assessment flagging &amp; internal form</td><td>2 days</td></tr>
+                    <tr><td>5.4</td><td>Workflow: Appointment booked &rarr; case manager email</td><td>1 day</td></tr>
+                    <tr><td>5.5</td><td>Workflow: First-time referrer journey (3 education emails)</td><td>2 days</td></tr>
+                    <tr><td>5.6</td><td>Workflow: Milestones (10th, 50th) + Inactivity (90 days)</td><td>1.5 days</td></tr>
+                    <tr><td>5.7</td><td>Workflow: Budget &amp; allied health alerts</td><td>1 day</td></tr>
+                    <tr><td>5.8</td><td>Workflow: Lead qualification &amp; assignment</td><td>1 day</td></tr>
+                    <tr><td>5.9</td><td>Workflow: Service agreement auto-populate &rarr; PandaDoc</td><td>2 days</td></tr>
+                    <tr><td>5.10</td><td>Zapier: GHL &rarr; PracSuite data push</td><td>3 days</td></tr>
+                    <tr><td>5.11</td><td>Zapier: GHL &rarr; Google Drive + Gmail</td><td>2 days</td></tr>
+                    <tr><td>5.12</td><td>Test all automations</td><td>3 days</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Deliverable:</strong> All automations live and tested</p>
+        </div>
+    </div>
+
+    <!-- Phase 6 -->
+    <div class="phase-card">
+        <div class="phase-header">
+            <h4>Phase 6: Aged Care Lead Nurturing</h4>
+            <div class="phase-duration">Week 13-14</div>
+        </div>
+        <div class="phase-body">
+            <table>
+                <thead><tr><th>Task</th><th>Detail</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>6.1</td><td>Build aged care nurturing email sequence (5-7 emails, 12 months)</td><td>3 days</td></tr>
+                    <tr><td>6.2</td><td>Build SMS sequences</td><td>1 day</td></tr>
+                    <tr><td>6.3</td><td>Build "verbal consent" reminder workflow</td><td>1 day</td></tr>
+                    <tr><td>6.4</td><td>Build booking flow (stop drip &rarr; calendar booking)</td><td>1 day</td></tr>
+                    <tr><td>6.5</td><td>Build post-meeting follow-up sequence</td><td>1 day</td></tr>
+                    <tr><td>6.6</td><td>Build "Not Now" long-term nurture sequence</td><td>2 days</td></tr>
+                    <tr><td>6.7</td><td>Integrate LinkedIn lead capture</td><td>1 day</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Deliverable:</strong> Complete aged care sales funnel</p>
+        </div>
+    </div>
+
+    <!-- Phase 7 -->
+    <div class="phase-card">
+        <div class="phase-header">
+            <h4>Phase 7: Newsletters &amp; Dashboards</h4>
+            <div class="phase-duration">Week 15-16</div>
+        </div>
+        <div class="phase-body">
+            <table>
+                <thead><tr><th>Task</th><th>Detail</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>7.1</td><td>Design newsletter templates with headers/footers (3-4 types)</td><td>2 days</td></tr>
+                    <tr><td>7.2</td><td>Set up segmented contact lists</td><td>1 day</td></tr>
+                    <tr><td>7.3</td><td>Build dashboards: Referral counts, pipeline metrics, lead stats</td><td>2 days</td></tr>
+                    <tr><td>7.4</td><td>Build reports: Monthly referral reports, conversion rates</td><td>1 day</td></tr>
+                    <tr><td>7.5</td><td>Train Peter on newsletter creation &amp; sending</td><td>1 day</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Deliverable:</strong> Newsletter system + dashboards live</p>
+        </div>
+    </div>
+
+    <!-- Phase 8 -->
+    <div class="phase-card">
+        <div class="phase-header">
+            <h4>Phase 8: Testing, Training &amp; Go-Live</h4>
+            <div class="phase-duration">Week 17-18</div>
+        </div>
+        <div class="phase-body">
+            <table>
+                <thead><tr><th>Task</th><th>Detail</th><th>Duration</th></tr></thead>
+                <tbody>
+                    <tr><td>8.1</td><td>Run GHL in parallel with Salesforce (test with real data)</td><td>5 days</td></tr>
+                    <tr><td>8.2</td><td>Train Mark, Michelle, Peter, office staff on GHL</td><td>3 days</td></tr>
+                    <tr><td>8.3</td><td>Fix issues found during parallel run</td><td>3 days</td></tr>
+                    <tr><td>8.4</td><td>Final data sync (new contacts from Salesforce)</td><td>1 day</td></tr>
+                    <tr><td>8.5</td><td>Switch off: Salesforce, JotForm, ActiveCampaign, Pardot</td><td>1 day</td></tr>
+                    <tr><td>8.6</td><td>Post-go-live support (2 weeks)</td><td>Ongoing</td></tr>
+                </tbody>
+            </table>
+            <p><strong>Deliverable:</strong> Full cutover to GHL. Salesforce decommissioned.</p>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 10: HOMEWORK -->
+<div class="section" id="s10">
+    <h2>10. Mark's Homework / Action Items</h2>
+    <table>
+        <thead><tr><th>#</th><th>Task</th><th>Priority</th><th>Status</th></tr></thead>
+        <tbody>
+            <tr><td>1</td><td>Provide spreadsheet: Salesforce field names (Col A) mapped to PracSuite field names (Col B) and where they sit in PracSuite (Col C)</td><td><span class="badge high">HIGH</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>2</td><td>Provide LastPass access for: Salesforce, JotForm, Pardot</td><td><span class="badge high">HIGH</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>3</td><td>Confirm which email templates from Salesforce are still in use</td><td><span class="badge high">HIGH</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>4</td><td>Provide the aged care journey document (mapped out last year)</td><td><span class="badge medium">MEDIUM</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>5</td><td>Provide WordPress login for website edits</td><td><span class="badge medium">MEDIUM</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>6</td><td>Arrange meeting with Peter (assistant) re: Pardot templates &amp; newsletters</td><td><span class="badge medium">MEDIUM</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>7</td><td>Provide PracSuite login for integration research</td><td><span class="badge high">HIGH</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>8</td><td>Confirm all referral types &amp; forms needed (~6-7)</td><td><span class="badge medium">MEDIUM</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>9</td><td>Provide flipbook/brochure assets for education journey emails</td><td><span class="badge low">LOW</span></td><td><span class="badge pending">PENDING</span></td></tr>
+            <tr><td>10</td><td>Write out detailed automation triggers for each form field selection</td><td><span class="badge medium">MEDIUM</span></td><td><span class="badge pending">PENDING</span></td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 11: KEY DECISIONS -->
+<div class="section" id="s11">
+    <h2>11. Key Decisions &amp; Notes</h2>
+
+    <h3>Confirmed Decisions</h3>
+    <table>
+        <thead><tr><th>#</th><th>Decision</th></tr></thead>
+        <tbody>
+            <tr><td>1</td><td><strong>Single referral button</strong> on website &rarr; GHL landing page (subdomain)</td></tr>
+            <tr><td>2</td><td><strong>Keep PandaDoc</strong> for digital signatures (half the price of DocuSign)</td></tr>
+            <tr><td>3</td><td><strong>Keep PracSuite</strong> as practice management software</td></tr>
+            <tr><td>4</td><td><strong>Use Zapier</strong> for GHL &harr; PracSuite integration</td></tr>
+            <tr><td>5</td><td><strong>Decommission:</strong> Salesforce, Pardot, JotForm, ActiveCampaign, Calendly</td></tr>
+            <tr><td>6</td><td><strong>Data source of truth:</strong> Salesforce (ActiveCampaign synced in)</td></tr>
+            <tr><td>7</td><td><strong>WordPress edits:</strong> Faraz's team handles (cuts out third-party web developer)</td></tr>
+            <tr><td>8</td><td><strong>Salesforce switch-off:</strong> June/July 2026</td></tr>
+            <tr><td>9</td><td><strong>Run two systems in parallel</strong> before cutover</td></tr>
+            <tr><td>10</td><td><strong>AI chatbot:</strong> Phase 2 consideration for lead qualification</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Open Items</h3>
+    <ul>
+        <li>PracSuite API field mapping needs verification</li>
+        <li>PandaDoc &harr; GHL integration method (native vs Zapier)</li>
+        <li>Exact number of email templates to recreate</li>
+        <li>SMS implementation for case managers (Phase 2)</li>
+        <li>AI bot for website triage (Phase 2)</li>
+        <li>Website rebuild scope (keep current WordPress or future rebuild)</li>
+        <li>Which referral form fields are truly mandatory vs optional</li>
+    </ul>
+
+    <h3>Risks</h3>
+    <table>
+        <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead>
+        <tbody>
+            <tr><td>PracSuite API doesn't support needed fields</td><td><span class="badge high">HIGH</span></td><td>Research first (Phase 1) before building</td></tr>
+            <tr><td>Data loss during migration</td><td><span class="badge high">HIGH</span></td><td>Parallel running period + backup</td></tr>
+            <tr><td>Staff resistance to new system</td><td><span class="badge medium">MEDIUM</span></td><td>Training sessions + simple UI</td></tr>
+            <tr><td>Form completion rates drop</td><td><span class="badge low">LOW</span></td><td>Keep similar structure, add hover help</td></tr>
+            <tr><td>Timeline slips past June</td><td><span class="badge medium">MEDIUM</span></td><td>Prioritize core functions, phase optional features</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 12: APPENDIX -->
+<div class="section" id="s12">
+    <h2>12. Appendix: Referral Form Fields (Supported Home)</h2>
+
+    <p>Complete field list as demonstrated by Mark during the scoping session:</p>
+
+    <h3>Page 1 - Referral Details</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>Date of Referral</td><td>Date picker</td><td>Default: today, can change</td></tr>
+            <tr><td>Instructions text</td><td>Static text</td><td>"If you have inquiries, contact us"</td></tr>
+            <tr><td>Referral Type</td><td>Dropdown</td><td>Supported Home / Restorative Pathway / CHSP / Other</td></tr>
+            <tr><td>Start Date</td><td>Date picker</td><td></td></tr>
+            <tr><td>Provider Name</td><td>Text</td><td>= "Account" in Salesforce</td></tr>
+            <tr><td>Care Partner Name</td><td>Text</td><td>= "Contact" in Salesforce (Case Manager)</td></tr>
+            <tr><td>Care Partner Email</td><td>Email</td><td></td></tr>
+            <tr><td>Care Partner Phone</td><td>Phone</td><td></td></tr>
+        </tbody>
+    </table>
+
+    <h3>Page 2 - Participant Details</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>Previously referred to Bodyright?</td><td>Yes/No</td><td><strong>If Yes: skips 3 pages, goes to gaps only</strong></td></tr>
+            <tr><td>First Name</td><td>Text</td><td></td></tr>
+            <tr><td>Last Name</td><td>Text</td><td></td></tr>
+            <tr><td>Date of Birth</td><td>Date</td><td></td></tr>
+            <tr><td>Address</td><td>Text</td><td>Address lookup would be nice</td></tr>
+            <tr><td>Gender</td><td>Dropdown</td><td></td></tr>
+            <tr><td>Phone Number</td><td>Phone</td><td></td></tr>
+            <tr><td>Mobile</td><td>Phone</td><td><strong>MANDATORY</strong> - often next of kin's number</td></tr>
+            <tr><td>Email Address</td><td>Email</td><td><strong>MANDATORY</strong></td></tr>
+            <tr><td>Interpreter Required</td><td>Yes/No</td><td></td></tr>
+            <tr><td>Package Level</td><td>Dropdown (1-5)</td><td>Level 1-2 are usually "Limited" budget</td></tr>
+            <tr><td>Budget</td><td>Dropdown</td><td>Flexible / Limited. <strong>"Limited" triggers admin email</strong></td></tr>
+            <tr><td>Capacity to Pay Privately</td><td>Yes/No</td><td>Relevant for home modifications</td></tr>
+            <tr><td>Home Inspection Done</td><td>Yes/No</td><td></td></tr>
+        </tbody>
+    </table>
+
+    <h3>Page 3 - Health History</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>Health History</td><td>Textarea</td><td>Free text</td></tr>
+            <tr><td>Current Medical Health Attachment</td><td>Yes/No</td><td>If Yes: upload at end of form</td></tr>
+            <tr><td>Social Situation</td><td>Textarea</td><td>e.g. "Lives alone"</td></tr>
+            <tr><td>Recent Medical Intervention</td><td>Textarea</td><td></td></tr>
+            <tr><td>Previous Health History Intervention</td><td>Textarea</td><td></td></tr>
+            <tr><td>Current Service Frequency</td><td>Table/Fields</td><td>Service type + frequency (e.g. Gardener - Fortnightly)</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Page 4 - Billing &amp; Allied Health Services</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>Billing Name</td><td>Text</td><td>Provider billing name</td></tr>
+            <tr><td>Billing Address/Details</td><td>Text</td><td></td></tr>
+            <tr><td>Allied Health Services Required</td><td>Checkboxes</td><td>Physiotherapy, OT, Osteopathy, Exercise Physiology, PD Warrior, Hydro, Functional Capacity, Other</td></tr>
+            <tr><td>Specific Allied Health Request</td><td>Checkbox</td><td><strong>Triggers "call them" email to admin</strong></td></tr>
+            <tr><td>Main Reason for Referral</td><td>Textarea</td><td>Free text</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Page 5 - Safety &amp; Risk Assessment</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>Violence concerns</td><td>Yes/No</td><td rowspan="7" style="vertical-align:middle; background:#fff5f5;"><strong>IF ANY = Yes or Unknown:<br>Risk Management Plan REQUIRED</strong><br><br>Red banner in Salesforce.<br>Must call case manager, document plan.</td></tr>
+            <tr><td>Behaviour plan required</td><td>Yes/No</td></tr>
+            <tr><td>Alcohol/Drug concerns</td><td>Yes/No/Unknown</td></tr>
+            <tr><td>Firearms on premises</td><td>Yes/No</td></tr>
+            <tr><td>Sexual offender history</td><td>Yes/No</td></tr>
+            <tr><td>Animals on premises</td><td>Yes/No + Type</td></tr>
+            <tr><td>Other risk factors</td><td>Yes/No + Detail</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Page 6 - Contacts</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td colspan="3" style="background:#ebf8ff;"><strong>Primary Contact (Next of Kin)</strong></td></tr>
+            <tr><td>Name</td><td>Text</td><td></td></tr>
+            <tr><td>Relationship</td><td>Dropdown</td><td>Daughter, Son, Spouse, etc.</td></tr>
+            <tr><td>Address</td><td>Text</td><td></td></tr>
+            <tr><td>Phone/Mobile</td><td>Phone</td><td></td></tr>
+            <tr><td>Email</td><td>Email</td><td></td></tr>
+            <tr><td colspan="3" style="background:#ebf8ff;"><strong>Secondary Contact</strong></td></tr>
+            <tr><td>Same fields as above</td><td></td><td>Optional</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Page 7 - GP</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Type</th></tr></thead>
+        <tbody>
+            <tr><td>GP Name</td><td>Text</td></tr>
+            <tr><td>GP Practice</td><td>Text</td></tr>
+            <tr><td>GP Phone</td><td>Phone</td></tr>
+            <tr><td>GP Address</td><td>Text</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Page 8 - Final</h3>
+    <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+            <tr><td>File Upload</td><td>File upload</td><td>Medical docs, discharge summary. Optional. Goes to Google Drive.</td></tr>
+            <tr><td>How Did You Hear About Us?</td><td>Dropdown</td><td>Word of Mouth, Recommendation, Other, etc.</td></tr>
+            <tr><td>Submit Button</td><td>Button</td><td>Triggers all automations</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- FOOTER -->
+<div class="doc-footer">
+    <p><strong>Document prepared by:</strong> Faraz Ahmed - Automate Accelerator</p>
+    <p><strong>Based on:</strong> Scoping Session Recording - February 12, 2026</p>
+    <p><strong>Version:</strong> 1.0</p>
+</div>
+
+</div><!-- end container -->
+
+</body>
+</html>
